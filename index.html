@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winamp Bento Pro - Custom Skins</title>
+    <title>Winamp Bento Pro - Final</title>
     <style>
         :root {
             --winamp-bg: #383d49;
@@ -30,21 +30,38 @@
             margin: 20px 0;
             font-family: Arial, sans-serif;
             color: var(--winamp-text);
-            transition: all 0.3s ease;
         }
 
         #winamp-container {
-            width: 420px;
+            width: 440px;
             background: var(--winamp-bg);
             border: 1px solid #111;
             border-radius: 4px;
             padding: 5px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.9);
+            position: relative;
+        }
+
+        /* Skin Selector di Pojok Kanan Atas */
+        .skin-header {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            z-index: 10;
+        }
+        .skin-select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #555;
+            font-size: 9px;
+            padding: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
         }
 
         .display-panel {
             background: var(--winamp-display);
-            margin: 5px;
+            margin: 25px 5px 5px 5px;
             padding: 12px;
             border: 1px solid #444;
             display: flex;
@@ -62,7 +79,7 @@
 
         #visualizer { width: 120px; height: 55px; background: #000; }
 
-        .controls { display: flex; gap: 3px; padding: 10px 5px; justify-content: center; flex-wrap: wrap; }
+        .controls { display: flex; gap: 3px; padding: 10px 5px; justify-content: center; }
         .btn {
             background: linear-gradient(to bottom, #5d6475, #2a2e38);
             border: 1px solid #000;
@@ -70,22 +87,13 @@
             padding: 5px;
             font-size: 9px;
             cursor: pointer;
-            min-width: 48px;
+            min-width: 50px;
             text-transform: uppercase;
         }
         .btn:active { background: #111; color: var(--winamp-green); }
         .btn.active { border-color: var(--winamp-green); color: var(--winamp-green); }
 
-        select.skin-select {
-            background: #222;
-            color: #fff;
-            border: 1px solid #555;
-            font-size: 9px;
-            padding: 4px;
-            cursor: pointer;
-        }
-
-        /* Equalizer Rapat */
+        /* Equalizer Rapat & Keren */
         .eq-ornament {
             background: rgba(0,0,0,0.2);
             border: 1px inset #111;
@@ -109,7 +117,36 @@
             background: #bdc5d6; border: 1px solid #000;
         }
 
-        /* Playlist 15 Baris */
+        /* Playlist Grid Selection */
+        .playlist-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
+            padding: 5px;
+            margin: 5px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+        }
+        .cat-btn {
+            background: #444b59;
+            border: 1px solid #111;
+            color: #bdc5d6;
+            font-size: 8px;
+            padding: 4px 2px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .cat-btn.active { background: var(--active-blue); color: white; }
+
+        /* Search Area */
+        .search-area { padding: 5px; }
+        #search-input {
+            width: 100%; background: #000; border: 1px solid #444;
+            color: var(--winamp-green); font-size: 11px; padding: 5px; box-sizing: border-box;
+            outline: none;
+        }
+
+        /* Playlist Editor (15 lagu height) */
         .playlist-area {
             background: #000;
             height: 330px;
@@ -123,25 +160,23 @@
         }
         .playlist-item.active { background: var(--active-blue); color: white; }
 
-        .footer-selection {
-            display: flex; flex-direction: column; align-items: center;
-            padding: 10px; border-top: 1px solid #444; margin-top: 5px;
-        }
-        #category-select {
-            width: 250px; background: #222; color: var(--winamp-yellow);
-            border: 1px solid #555; padding: 6px; cursor: pointer;
-        }
-
-        input[type=range]#seek-bar { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); }
+        input[type=range]#seek-bar { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); cursor: pointer; }
     </style>
 </head>
 <body class="skin-classic">
 
 <div id="winamp-container">
-    <div style="font-size: 10px; padding: 2px 10px; color: #777; display: flex; justify-content: space-between;">
-        <span>WINAMP 0.91 - IPPNUDA PLAYER</span>
-        <span id="skin-label">SKIN: CLASSIC</span>
+    <div class="skin-header">
+        <select class="skin-select" onchange="changeSkin(this.value)">
+            <option value="classic">SKIN: CLASSIC</option>
+            <option value="dark">SKIN: MODERN DARK</option>
+            <option value="ruby">SKIN: RUBY RED</option>
+            <option value="emerald">SKIN: EMERALD</option>
+            <option value="midnight">SKIN: MIDNIGHT</option>
+        </select>
     </div>
+
+    <div style="font-size: 10px; padding: 2px 10px; color: #777;">WINAMP 0.91 - IPPNUDA PLAYER</div>
     
     <div class="display-panel">
         <div>
@@ -160,14 +195,6 @@
         <button class="btn" onclick="stopTrack()">STOP</button>
         <button class="btn" onclick="nextTrack()">NEXT</button>
         <button class="btn" id="shuffle-btn" onclick="toggleShuffle()">SHF</button>
-        
-        <select class="skin-select" onchange="changeSkin(this.value)">
-            <option value="classic">SKIN: CLASSIC</option>
-            <option value="dark">SKIN: MODERN DARK</option>
-            <option value="ruby">SKIN: RUBY RED</option>
-            <option value="emerald">SKIN: EMERALD</option>
-            <option value="midnight">SKIN: MIDNIGHT</option>
-        </select>
     </div>
 
     <div class="eq-ornament">
@@ -183,11 +210,13 @@
         <div class="eq-bar"><input type="range" class="eq-slider" value="65"></div>
     </div>
 
-    <div class="playlist-area" id="playlist"></div>
+    <div class="playlist-grid" id="category-grid"></div>
 
-    <div class="footer-selection">
-        <select id="category-select" onchange="switchCategory(this.value)"></select>
+    <div class="search-area">
+        <input type="text" id="search-input" placeholder="Cari lagu..." oninput="renderPlaylist()">
     </div>
+
+    <div class="playlist-area" id="playlist"></div>
 </div>
 
 <audio id="audio-player" crossorigin="anonymous" preload="auto"></audio>
@@ -206,53 +235,68 @@
             { title: "Masa Lalu Tertinggal", url: "music/pop/Peterpan_Masa_Lalu_Tertinggal.mp3", duration: "3:57" },
             { title: "Bintang Di Surga", url: "music/pop/Peterpan_Bintang_Di_Surga.mp3", duration: "5:02" }
         ],
-        "Obro-obrog": [], "Sholawatan": [], "Dangdut": [], "Anak-anak": [], "Tarling": [], "Barat": [], "Qiro": [], "Ceramah": [], "Murotal": []
+        "Obro-obrog": [
+            { title: "Ya Ramadhan", url: "music/Obro-obrog/Nasida_Ria_Ya_Ramadhan.mp3", duration: "3:43" },
+            { title: "Magadir", url: "music/Obro-obrog/Masud_Sidiq_Magadir.mp3", duration: "11:38" }
+        ],
+        "Sholawatan": [], "Dangdut": [], "Anak-anak": [], "Tarling": [], "Barat": [], "Qiro": [], "Ceramah": [], "Murotal": []
     };
 
     let currentCat = "pop", currentTrackIndex = 0, isShuffle = false;
     const audio = document.getElementById('audio-player'), playlistElement = document.getElementById('playlist');
     const timeDisplay = document.getElementById('time-display'), songTitleDisplay = document.getElementById('song-title');
-    const seekBar = document.getElementById('seek-bar'), categorySelect = document.getElementById('category-select');
+    const seekBar = document.getElementById('seek-bar'), categoryGrid = document.getElementById('category-grid');
+    const searchInput = document.getElementById('search-input');
 
     let audioCtx, analyser, canvas, ctx, source;
 
-    function changeSkin(skinName) {
-        document.body.className = 'skin-' + skinName;
-        document.getElementById('skin-label').innerText = 'SKIN: ' + skinName.toUpperCase();
-    }
+    function changeSkin(skinName) { document.body.className = 'skin-' + skinName; }
 
     function initVisualizer() {
         if (audioCtx) return;
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             analyser = audioCtx.createAnalyser();
-            canvas = document.getElementById('visualizer');
-            ctx = canvas.getContext('2d');
+            canvas = document.getElementById('visualizer'); ctx = canvas.getContext('2d');
             source = audioCtx.createMediaElementSource(audio);
-            source.connect(analyser);
-            analyser.connect(audioCtx.destination);
-            analyser.fftSize = 64;
-            draw();
+            source.connect(analyser); analyser.connect(audioCtx.destination);
+            analyser.fftSize = 64; draw();
         } catch(e) { console.error(e); }
     }
 
     function draw() {
         requestAnimationFrame(draw);
-        const data = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(data);
+        const data = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data);
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
         let x = 0;
         for(let i=0; i<data.length; i++){
             let h = data[i]/2;
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--winamp-green');
-            ctx.fillRect(x, canvas.height-h, 2, h);
-            x += 4;
+            ctx.fillRect(x, canvas.height-h, 2, h); x += 4;
         }
+    }
+
+    function renderCategories() {
+        categoryGrid.innerHTML = "";
+        Object.keys(masterPlaylists).forEach(cat => {
+            const btn = document.createElement('div');
+            btn.className = `cat-btn ${cat === currentCat ? 'active' : ''}`;
+            btn.innerText = cat;
+            btn.onclick = () => {
+                currentCat = cat; currentTrackIndex = 0;
+                renderCategories(); loadTrack(0, true);
+            };
+            categoryGrid.appendChild(btn);
+        });
     }
 
     function loadTrack(index, autoPlay = false) {
         const songs = masterPlaylists[currentCat];
-        if (!songs || songs.length === 0) return;
+        if (!songs || songs.length === 0) {
+            playlistElement.innerHTML = '<div style="color:#555; text-align:center; padding-top:100px;">Folder Kosong</div>';
+            songTitleDisplay.innerText = "Kosong";
+            return;
+        }
         currentTrackIndex = index;
         audio.src = encodeURI(songs[index].url);
         songTitleDisplay.innerText = `${index + 1}. ${songs[index].title}`;
@@ -264,51 +308,38 @@
     function renderPlaylist() {
         playlistElement.innerHTML = "";
         const songs = masterPlaylists[currentCat];
-        if (!songs || songs.length === 0) {
-            playlistElement.innerHTML = '<div style="color:#555; text-align:center; padding-top:50px;">Kosong</div>';
-            return;
-        }
+        const filter = searchInput.value.toLowerCase();
+        
         songs.forEach((song, index) => {
-            const item = document.createElement('div');
-            item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
-            item.innerHTML = `<span>${index + 1}. ${song.title}</span><span style="color:var(--winamp-green)">${song.duration}</span>`;
-            item.onclick = () => loadTrack(index, true);
-            playlistElement.appendChild(item);
+            if (song.title.toLowerCase().includes(filter)) {
+                const item = document.createElement('div');
+                item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+                item.innerHTML = `<span>${index + 1}. ${song.title}</span><span style="color:var(--winamp-green)">${song.duration}</span>`;
+                item.onclick = () => loadTrack(index, true);
+                playlistElement.appendChild(item);
+            }
         });
     }
 
     function playTrack() {
         initVisualizer();
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        audio.play().catch(() => console.log("Klik Play untuk mulai"));
+        audio.play().catch(() => console.log("Klik tombol PLAY!"));
     }
 
     function pauseTrack() { audio.pause(); }
     function stopTrack() { audio.pause(); audio.currentTime = 0; }
-    
     function nextTrack() {
-        const s = masterPlaylists[currentCat];
-        if(!s || s.length === 0) return;
+        const s = masterPlaylists[currentCat]; if(!s || s.length === 0) return;
         currentTrackIndex = isShuffle ? Math.floor(Math.random()*s.length) : (currentTrackIndex+1)%s.length;
         loadTrack(currentTrackIndex, true);
     }
-
     function prevTrack() {
-        const s = masterPlaylists[currentCat];
-        if(!s || s.length === 0) return;
+        const s = masterPlaylists[currentCat]; if(!s || s.length === 0) return;
         currentTrackIndex = (currentTrackIndex-1+s.length)%s.length;
         loadTrack(currentTrackIndex, true);
     }
-
-    function switchCategory(cat) {
-        currentCat = cat; currentTrackIndex = 0;
-        loadTrack(0, false);
-    }
-
-    function toggleShuffle() {
-        isShuffle = !isShuffle;
-        document.getElementById('shuffle-btn').classList.toggle('active');
-    }
+    function toggleShuffle() { isShuffle = !isShuffle; document.getElementById('shuffle-btn').classList.toggle('active'); }
 
     audio.addEventListener('timeupdate', () => {
         if (audio.duration) seekBar.value = (audio.currentTime / audio.duration) * 100;
@@ -319,11 +350,7 @@
     seekBar.oninput = () => { if (audio.duration) audio.currentTime = (seekBar.value / 100) * audio.duration; };
     audio.addEventListener('ended', nextTrack);
 
-    Object.keys(masterPlaylists).forEach(cat => {
-        let opt = document.createElement('option'); opt.value = cat; opt.innerText = cat;
-        categorySelect.appendChild(opt);
-    });
-    
+    renderCategories();
     loadTrack(0, false);
 </script>
 </body>
