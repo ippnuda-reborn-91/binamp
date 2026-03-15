@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winamp Bento Replica - Full Code</title>
+    <style>
+        :root {
+            --winamp-bg: #383d49;
+            --winamp-dark: #1a1a1b;
+            --winamp-display: #000000;
+            --winamp-green: #00ff00;
+            --winamp-text: #b4b9c5;
+            --winamp-yellow: #ffff00;
+            --active-blue: #204a87;
+            --border-light: #5d6475;
+        }
+
+        body {
+            background-color: #0f0f0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: var(--winamp-text);
+        }
+
+        /* Container Utama Winamp */
+        #winamp-container {
+            width: 380px;
+            background: var(--winamp-bg);
+            border: 1px solid #111;
+            border-radius: 4px;
+            padding: 4px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+        }
+
+        /* Header / Top Bar */
+        .top-bar {
+            height: 22px;
+            background: linear-gradient(to bottom, #5d6475, #383d49);
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-weight: bold;
+            border-bottom: 1px solid #111;
+            letter-spacing: 1px;
+        }
+
+        /* Display Panel (LCD) */
+        .display-panel {
+            background: var(--winamp-display);
+            margin: 8px 5px;
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        #time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 34px;
+            color: var(--winamp-green);
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0,255,0,0.6);
+        }
+
+        #song-title {
+            font-size: 11px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--winamp-text);
+        }
+
+        /* Seek Bar */
+        .seek-container { padding: 0 5px 10px; }
+        #seek-bar {
+            width: 100%;
+            height: 5px;
+            accent-color: var(--winamp-green);
+            cursor: pointer;
+        }
+
+        /* Playback Controls */
+        .controls {
+            display: flex;
+            gap: 3px;
+            padding: 5px;
+            justify-content: flex-start;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #5d6475, #2a2e38);
+            border: 1px solid #000;
+            color: #eee;
+            padding: 5px 10px;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 2px;
+            min-width: 45px;
+        }
+
+        .btn:active { background: #111; color: var(--winamp-green); }
+
+        /* Equalizer Section */
+        .eq-panel {
+            background: #2b303b;
+            border: 1px inset #111;
+            margin: 8px 5px;
+            padding: 15px 5px 5px;
+            display: flex;
+            justify-content: space-around;
+            height: 90px;
+            position: relative;
+        }
+
+        .eq-title {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 8px;
+            font-weight: bold;
+            color: #777;
+        }
+
+        .eq-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 25px;
+        }
+
+        .eq-slider {
+            -webkit-appearance: none;
+            width: 60px;
+            height: 3px;
+            background: #111;
+            transform: rotate(-90deg);
+            margin: 25px 0;
+            cursor: pointer;
+        }
+
+        .eq-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 8px;
+            background: #bdc5d6;
+            border: 1px solid #000;
+        }
+
+        .eq-label { font-size: 7px; color: #666; margin-top: -12px; }
+
+        /* Playlist Editor */
+        .playlist-header {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 5px 10px;
+            color: var(--winamp-yellow);
+        }
+
+        .playlist-area {
+            background: #000;
+            height: 180px;
+            margin: 0 5px 5px;
+            border: 1px solid #444;
+            overflow-y: auto;
+        }
+
+        .playlist-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            font-size: 11px;
+            color: var(--winamp-yellow);
+            cursor: pointer;
+            border-bottom: 1px solid #111;
+        }
+
+        .playlist-item:hover { background: #1a1a1a; }
+        .playlist-item.active {
+            background: var(--active-blue);
+            color: white;
+        }
+
+        .playlist-item .dur { color: var(--winamp-green); }
+
+        /* Custom Scrollbar */
+        .playlist-area::-webkit-scrollbar { width: 8px; }
+        .playlist-area::-webkit-scrollbar-track { background: #111; }
+        .playlist-area::-webkit-scrollbar-thumb { background: #444; }
+
+    </style>
+</head>
+<body>
+
+<div id="winamp-container">
+    <div class="top-bar">WINAMP 5.92 - BENTO REPLICA</div>
+    
+    <div class="display-panel">
+        <div id="time-display">00:00</div>
+        <div id="song-title">Menunggu file musik...</div>
+        <div style="position: absolute; right: 10px; top: 12px; font-size: 9px; color: #555;">128kbps / 44kHz</div>
+    </div>
+
+    <div class="seek-container">
+        <input type="range" id="seek-bar" value="0" max="100">
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="prevTrack()">PREV</button>
+        <button class="btn" onclick="playTrack()">PLAY</button>
+        <button class="btn" onclick="pauseTrack()">PAUSE</button>
+        <button class="btn" onclick="stopTrack()">STOP</button>
+        <button class="btn" onclick="nextTrack()">NEXT</button>
+    </div>
+
+    <div class="eq-panel">
+        <div class="eq-title">EQUALIZER (ORNAMEN)</div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="50"><span class="eq-label">PRE</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="70"><span class="eq-label">60</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="80"><span class="eq-label">170</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="60"><span class="eq-label">310</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="40"><span class="eq-label">600</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="50"><span class="eq-label">1K</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="90"><span class="eq-label">12K</span></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="60"><span class="eq-label">16K</span></div>
+    </div>
+
+    <div class="playlist-header">PLAYLIST EDITOR</div>
+    <div class="playlist-area" id="playlist">
+        </div>
+</div>
+
+<audio id="audio-player"></audio>
+
+<script>
+    // 1. DAFTAR LAGU ANDA (Ganti URL dengan link file GitHub Anda)
+    const songs = [
+        { title: "Ada Apa Denganmu", url: "music/1. Peterpan - Ada Apa Denganmu.mp3", duration: "4:41" },
+        { title: "Mungkin Nati", url: "music/2. Peterpan - Mungkin Nanti.mp3", duration: "4:29" },
+        { title: "Khayalan Tingkat tinggi", url: "music/3. Peterpan - Khayalan Tingkat.mp3", duration: "3:36" },
+        { title: "Dibelakangku", url: "music/4. Peterpan - Di Belakangku.mp3", duration: "3:45" },
+        { title: "Ku Katakan Dengan Indah", url: "music/5. Peterpan - Ku Katakan Dengan Indah.mp3", duration: "5:34" },
+        { title: "2 DSD", url: "music/6. Peterpan - 2 DSD.mp3", duration: "3:41" },
+        { title: "Diatas Normal", url: "music/7. Peterpan - Diatas Normal.mp3", duration: "3:35" },
+        { title: "Aku", url: "music/8.Peterpan - Aku.mp3", duration: "3:02" },
+        { title: "Masa Lalu Tertinggal", url: "music/9. Peterpan - Masa Lalu Tertinggal.mp3", duration: "3:57" },
+        { title: "Bintang Di Surga", url: "music/10. Peterpan - Bintang Di Surga.mp3", duration: "5:02" }
+    ];
+
+    let currentTrackIndex = 0;
+    const audio = document.getElementById('audio-player');
+    const playlistElement = document.getElementById('playlist');
+    const timeDisplay = document.getElementById('time-display');
+    const songTitleDisplay = document.getElementById('song-title');
+    const seekBar = document.getElementById('seek-bar');
+
+    // Fungsi menampilkan playlist
+    function renderPlaylist() {
+        playlistElement.innerHTML = "";
+        songs.forEach((song, index) => {
+            const item = document.createElement('div');
+            item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+            item.innerHTML = `
+                <span>${index + 655}. ${song.title}</span>
+                <span class="dur">${song.duration}</span>
+            `;
+            item.onclick = () => playSpecific(index);
+            playlistElement.appendChild(item);
+        });
+    }
+
+    // Fungsi muat lagu
+    function loadTrack(index) {
+        currentTrackIndex = index;
+        audio.src = songs[index].url;
+        songTitleDisplay.innerText = `${index + 655}. ${songs[index].title}`;
+        renderPlaylist();
+    }
+
+    // Kontrol Navigasi
+    function playTrack() { if (!audio.src) loadTrack(0); audio.play(); }
+    function pauseTrack() { audio.pause(); }
+    function stopTrack() { audio.pause(); audio.currentTime = 0; }
+    function nextTrack() {
+        currentTrackIndex = (currentTrackIndex + 1) % songs.length;
+        loadTrack(currentTrackIndex);
+        audio.play();
+    }
+    function prevTrack() {
+        currentTrackIndex = (currentTrackIndex - 1 + songs.length) % songs.length;
+        loadTrack(currentTrackIndex);
+        audio.play();
+    }
+    function playSpecific(index) { loadTrack(index); audio.play(); }
+
+    // Logic Otomatis & Update Progress
+    audio.addEventListener('ended', nextTrack);
+    
+    audio.addEventListener('timeupdate', () => {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        seekBar.value = progress || 0;
+        
+        let m = Math.floor(audio.currentTime / 60);
+        let s = Math.floor(audio.currentTime % 60);
+        timeDisplay.innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    });
+
+    seekBar.oninput = () => {
+        const targetTime = (seekBar.value / 100) * audio.duration;
+        audio.currentTime = targetTime;
+    };
+
+    // Jalankan pertama kali
+    renderPlaylist();
+</script>
+
+</body>
+</html>
