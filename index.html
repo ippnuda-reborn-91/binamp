@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winamp Bento Pro - Multi Playlist</title>
+    <title>Winamp Bento Pro - Multi Playlist & Search</title>
     <style>
         :root {
             --winamp-bg: #383d49;
@@ -58,8 +58,6 @@
             height: 60px;
         }
 
-        .lcd-text { flex: 1; }
-
         #time-display {
             font-family: 'Courier New', monospace;
             font-size: 30px;
@@ -71,7 +69,6 @@
             width: 120px;
             height: 50px;
             background: #000;
-            border-left: 1px solid #333;
         }
 
         /* Controls */
@@ -88,64 +85,43 @@
         }
         .btn.active { background: #005500; color: var(--winamp-green); border-color: var(--winamp-green); }
 
-        /* Category Selector */
-        .category-container {
-            margin: 10px 5px;
-            padding: 5px;
-            background: #272b35;
-            border: 1px inset #111;
-        }
-
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 3px;
-        }
-
-        .cat-btn {
-            background: #444b59;
-            border: 1px solid #111;
-            color: #bdc5d6;
-            font-size: 8px;
-            padding: 4px 2px;
-            cursor: pointer;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        .cat-btn.active {
-            background: var(--active-blue);
-            color: white;
-        }
-
-        /* Playlist */
-        .playlist-header { font-size: 10px; font-weight: bold; padding: 5px 10px; color: var(--winamp-yellow); }
-        .playlist-area {
+        /* Search Bar */
+        .search-container { padding: 0 5px; margin-bottom: 5px; }
+        #search-input {
+            width: 100%;
             background: #000;
-            height: 180px;
-            margin: 0 5px 5px;
             border: 1px solid #444;
-            overflow-y: auto;
-        }
-
-        .playlist-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 10px;
+            color: var(--winamp-green);
             font-size: 11px;
-            color: var(--winamp-yellow);
-            cursor: pointer;
-            border-bottom: 1px solid #111;
+            padding: 4px;
+            box-sizing: border-box;
+            outline: none;
         }
 
-        .playlist-item.active { background: var(--active-blue); color: white; }
-        .playlist-item .dur { color: var(--winamp-green); }
+        /* Category Grid */
+        .category-container { margin: 5px; padding: 5px; background: #272b35; border: 1px inset #111; }
+        .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+        .cat-btn {
+            background: #444b59; border: 1px solid #111; color: #bdc5d6;
+            font-size: 8px; padding: 4px 2px; cursor: pointer; text-align: center;
+        }
+        .cat-btn.active { background: var(--active-blue); color: white; }
 
-        /* Custom Scrollbar */
-        .playlist-area::-webkit-scrollbar { width: 8px; }
-        .playlist-area::-webkit-scrollbar-track { background: #111; }
-        .playlist-area::-webkit-scrollbar-thumb { background: #444; }
+        /* Playlist Area */
+        .playlist-area {
+            background: #000; height: 180px; margin: 0 5px 5px;
+            border: 1px solid #444; overflow-y: auto; position: relative;
+        }
+        .playlist-item {
+            display: flex; justify-content: space-between; padding: 5px 10px;
+            font-size: 11px; color: var(--winamp-yellow); cursor: pointer; border-bottom: 1px solid #111;
+        }
+        .playlist-item.active { background: var(--active-blue); color: white; }
+        .empty-msg {
+            color: #666; text-align: center; margin-top: 70px; font-style: italic; font-size: 12px;
+        }
+
+        input[type=range] { width: 96%; margin: 5px 8px; accent-color: var(--winamp-green); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -156,7 +132,7 @@
     <div class="display-panel">
         <div class="lcd-text">
             <div id="time-display">00:00</div>
-            <div id="song-title" style="font-size: 10px; width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Pilih Folder...</div>
+            <div id="song-title" style="font-size: 10px; width: 200px; overflow: hidden; white-space: nowrap;">Pilih Folder Peterpan...</div>
         </div>
         <canvas id="visualizer"></canvas>
     </div>
@@ -170,14 +146,16 @@
         <button class="btn" id="shuffle-btn" onclick="toggleShuffle()">SHUFFLE</button>
     </div>
 
-    <input type="range" id="seek-bar" value="0" max="100" style="width:96%; margin: 5px 8px; accent-color:#00ff00; cursor:pointer;">
+    <input type="range" id="seek-bar" value="0" max="100">
 
-    <div class="playlist-header">CATEGORY / FOLDER</div>
     <div class="category-container">
         <div class="category-grid" id="category-list"></div>
     </div>
 
-    <div class="playlist-header" id="current-cat-label">PLAYLIST: POP</div>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Cari judul lagu di playlist ini..." oninput="renderPlaylist()">
+    </div>
+
     <div class="playlist-area" id="playlist"></div>
 </div>
 
@@ -188,21 +166,27 @@
         "Pop": [
             { title: "Ada Apa Denganmu", url: "music/1. Peterpan - Ada Apa Denganmu .mp3", duration: "4:41" },
             { title: "Mungkin Nanti", url: "music/2. Peterpan - Mungkin Nanti.mp3", duration: "4:29" },
-            { title: "Khayalan Tingkat tinggi", url: "music/3. Peterpan - Khayalan Tingkat.mp3", duration: "3:36" }
+            { title: "Khayalan Tingkat tinggi", url: "music/3. Peterpan - Khayalan Tingkat.mp3", duration: "3:36" },
+            { title: "Dibelakangku", url: "music/4. Peterpan - Di Belakangku.mp3", duration: "3:45" },
+            { title: "Ku Katakan Dengan Indah", url: "music/5. Peterpan - Ku Katakan Dengan Indah.mp3", duration: "5:34" },
+            { title: "2 DSD", url: "music/6. Peterpan - 2 DSD.mp3", duration: "3:41" },
+            { title: "Diatas Normal", url: "music/7. Peterpan - Diatas Normal.mp3", duration: "3:35" },
+            { title: "Aku", url: "music/8.Peterpan - Aku.mp3", duration: "3:02" },
+            { title: "Masa Lalu Tertinggal", url: "music/9. Peterpan - Masa Lalu Tertinggal.mp3", duration: "3:57" },
+            { title: "Bintang Di Surga", url: "music/10. Peterpan - Bintang Di Surga.mp3", duration: "5:02" }
         ],
-        "Obro-obrog": [{ title: "Lagu Obrog 1", url: "music/Obro-obrog/1.mp3", duration: "0:00" }],
-        "Sholawatan": [{ title: "Sholawat 1", url: "music/sholawatan/1.mp3", duration: "0:00" }],
-        "Dangdut": [{ title: "Dangdut 1", url: "music/dangdut/1.mp3", duration: "0:00" }],
-        "Anak-anak": [{ title: "Lagu Anak 1", url: "music/Anak-anak/1.mp3", duration: "0:00" }],
-        "Tarling": [{ title: "Tarling 1", url: "music/tarling/1.mp3", duration: "0:00" }],
-        "Barat": [{ title: "West Song 1", url: "music/barat/1.mp3", duration: "0:00" }],
-        "Qiro": [{ title: "Qiroah 1", url: "music/qiro/1.mp3", duration: "0:00" }],
-        "Ceramah": [{ title: "Ceramah 1", url: "music/ceramah/1.mp3", duration: "0:00" }],
-        "Murotal": [{ title: "Murotal 1", url: "music/murotal/1.mp3", duration: "0:00" }]
+        "Obro-obrog": [],
+        "Sholawatan": [],
+        "Dangdut": [],
+        "Anak-anak": [],
+        "Tarling": [],
+        "Barat": [],
+        "Qiro": [],
+        "Ceramah": [],
+        "Murotal": []
     };
 
     let currentCat = "Pop";
-    let currentSongs = masterPlaylists[currentCat];
     let currentTrackIndex = 0;
     let isShuffle = false;
 
@@ -213,8 +197,9 @@
     const songTitleDisplay = document.getElementById('song-title');
     const seekBar = document.getElementById('seek-bar');
     const shuffleBtn = document.getElementById('shuffle-btn');
+    const searchInput = document.getElementById('search-input');
 
-    // VISUALIZER LOGIC
+    // VISUALIZER
     let audioCtx, analyser, canvas, ctx, source;
 
     function initVisualizer() {
@@ -235,10 +220,7 @@
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
         analyser.getByteFrequencyData(dataArray);
-
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         const barWidth = (canvas.width / bufferLength) * 2;
         let x = 0;
         for (let i = 0; i < bufferLength; i++) {
@@ -249,7 +231,6 @@
         }
     }
 
-    // SYSTEM LOGIC
     function renderCategories() {
         categoryElement.innerHTML = "";
         Object.keys(masterPlaylists).forEach(cat => {
@@ -263,55 +244,73 @@
 
     function switchCategory(cat) {
         currentCat = cat;
-        currentSongs = masterPlaylists[cat];
-        document.getElementById('current-cat-label').innerText = `PLAYLIST: ${cat.toUpperCase()}`;
+        searchInput.value = ""; 
         renderCategories();
-        loadTrack(0);
-        audio.play();
+        if (masterPlaylists[cat].length > 0) {
+            loadTrack(0);
+            audio.play();
+        } else {
+            renderPlaylist();
+            songTitleDisplay.innerText = "Playlist Kosong";
+            audio.src = "";
+            timeDisplay.innerText = "00:00";
+        }
     }
 
     function renderPlaylist() {
         playlistElement.innerHTML = "";
-        currentSongs.forEach((song, index) => {
-            const item = document.createElement('div');
-            item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
-            item.innerHTML = `<span>${index + 1}. ${song.title}</span><span class="dur">${song.duration}</span>`;
-            item.onclick = () => playSpecific(index);
-            playlistElement.appendChild(item);
+        const filter = searchInput.value.toLowerCase();
+        const songs = masterPlaylists[currentCat];
+
+        if (songs.length === 0) {
+            playlistElement.innerHTML = '<div class="empty-msg">Playlist Kosong</div>';
+            return;
+        }
+
+        songs.forEach((song, index) => {
+            if (song.title.toLowerCase().includes(filter)) {
+                const item = document.createElement('div');
+                item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+                item.innerHTML = `<span>${index + 1}. ${song.title}</span><span class="dur">${song.duration}</span>`;
+                item.onclick = () => playSpecific(index);
+                playlistElement.appendChild(item);
+            }
         });
     }
 
     function loadTrack(index) {
+        const songs = masterPlaylists[currentCat];
+        if (songs.length === 0) return;
         currentTrackIndex = index;
-        audio.src = currentSongs[index].url;
-        songTitleDisplay.innerText = `${index + 1}. ${currentSongs[index].title}`;
+        audio.src = songs[index].url;
+        songTitleDisplay.innerText = `${index + 1}. ${songs[index].title}`;
         renderPlaylist();
     }
 
-    function toggleShuffle() {
-        isShuffle = !isShuffle;
-        shuffleBtn.classList.toggle('active');
-    }
+    function toggleShuffle() { isShuffle = !isShuffle; shuffleBtn.classList.toggle('active'); }
 
     function playTrack() {
         initVisualizer();
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        if (!audio.src) loadTrack(0);
-        audio.play();
+        if (masterPlaylists[currentCat].length > 0) audio.play();
     }
 
     function nextTrack() {
+        const songs = masterPlaylists[currentCat];
+        if (songs.length === 0) return;
         if (isShuffle) {
-            currentTrackIndex = Math.floor(Math.random() * currentSongs.length);
+            currentTrackIndex = Math.floor(Math.random() * songs.length);
         } else {
-            currentTrackIndex = (currentTrackIndex + 1) % currentSongs.length;
+            currentTrackIndex = (currentTrackIndex + 1) % songs.length;
         }
         loadTrack(currentTrackIndex);
         audio.play();
     }
 
     function prevTrack() {
-        currentTrackIndex = (currentTrackIndex - 1 + currentSongs.length) % currentSongs.length;
+        const songs = masterPlaylists[currentCat];
+        if (songs.length === 0) return;
+        currentTrackIndex = (currentTrackIndex - 1 + songs.length) % songs.length;
         loadTrack(currentTrackIndex);
         audio.play();
     }
@@ -330,10 +329,8 @@
     seekBar.oninput = () => { audio.currentTime = (seekBar.value / 100) * audio.duration; };
     audio.addEventListener('ended', nextTrack);
 
-    // Startup
     renderCategories();
     loadTrack(0);
 </script>
-
 </body>
 </html>
