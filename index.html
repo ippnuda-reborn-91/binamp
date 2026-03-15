@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winamp Bento Pro - Final</title>
+    <title>Winamp Bento Pro - Mobile Ready</title>
     <style>
         :root {
             --winamp-bg: #383d49;
@@ -21,19 +21,23 @@
         .skin-emerald { --winamp-bg: #1a4a2e; --active-blue: #006400; --winamp-green: #aaff00; }
         .skin-midnight { --winamp-bg: #1e1e2f; --active-blue: #3f3f5f; --winamp-green: #bb86fc; }
 
+        * { box-sizing: border-box; } /* Mencegah elemen meluap */
+
         body {
             background-color: #0f0f0f;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 20px 0;
+            margin: 0;
+            padding: 10px;
             font-family: Arial, sans-serif;
             color: var(--winamp-text);
         }
 
         #winamp-container {
-            width: 440px;
+            width: 100%;
+            max-width: 440px;
             background: var(--winamp-bg);
             border: 1px solid #111;
             border-radius: 4px;
@@ -42,7 +46,6 @@
             position: relative;
         }
 
-        /* Skin Selector di Pojok Kanan Atas */
         .skin-header {
             position: absolute;
             top: 5px;
@@ -56,77 +59,107 @@
             font-size: 9px;
             padding: 2px;
             cursor: pointer;
-            text-transform: uppercase;
         }
 
         .display-panel {
             background: var(--winamp-display);
             margin: 25px 5px 5px 5px;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #444;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 70px;
+            height: 75px;
+            overflow: hidden;
         }
 
         #time-display {
             font-family: 'Courier New', monospace;
-            font-size: 34px;
+            font-size: 30px;
             color: var(--winamp-green);
             font-weight: bold;
         }
 
-        #visualizer { width: 120px; height: 55px; background: #000; }
+        #song-title {
+            font-size: 11px;
+            width: 180px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: var(--winamp-text);
+        }
 
-        .controls { display: flex; gap: 3px; padding: 10px 5px; justify-content: center; }
+        #visualizer { width: 100px; height: 40px; background: #000; }
+
+        .controls { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 2px; 
+            padding: 8px 5px; 
+            justify-content: center; 
+        }
         .btn {
             background: linear-gradient(to bottom, #5d6475, #2a2e38);
             border: 1px solid #000;
             color: #eee;
-            padding: 5px;
+            padding: 5px 0;
             font-size: 9px;
             cursor: pointer;
-            min-width: 50px;
+            flex: 1;
+            min-width: 45px;
             text-transform: uppercase;
         }
         .btn:active { background: #111; color: var(--winamp-green); }
         .btn.active { border-color: var(--winamp-green); color: var(--winamp-green); }
 
-        /* Equalizer Rapat & Keren */
+        /* Equalizer - Tinggi Dikurangi agar Proporsional */
         .eq-ornament {
             background: rgba(0,0,0,0.2);
             border: 1px inset #111;
             margin: 5px;
             display: flex;
             justify-content: space-between;
-            height: 85px;
-            padding: 15px 8px;
+            height: 50px;
+            padding: 10px 8px;
         }
-        .eq-bar { display: flex; flex-direction: column; align-items: center; width: 8%; }
+        .eq-bar { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 8%; 
+            position: relative;
+        }
         .eq-slider {
             -webkit-appearance: none;
-            width: 60px; height: 2px;
+            width: 30px; /* Lebar slider disesuaikan tinggi container */
+            height: 2px;
             background: #111;
             transform: rotate(-90deg);
-            margin-top: 25px;
+            margin-top: 15px; /* Menengahkan slider */
+            cursor: pointer;
         }
         .eq-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 14px; height: 6px;
+            width: 12px; height: 6px;
             background: #bdc5d6; border: 1px solid #000;
         }
 
-        /* Playlist Grid Selection */
         .playlist-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 3px;
+            gap: 2px;
             padding: 5px;
             margin: 5px;
             background: rgba(0,0,0,0.3);
             border: 1px solid #444;
         }
+        
+        /* Grid responsif untuk HP kecil */
+        @media (max-width: 380px) {
+            .playlist-grid { grid-template-columns: repeat(3, 1fr); }
+            #song-title { width: 120px; }
+        }
+
         .cat-btn {
             background: #444b59;
             border: 1px solid #111;
@@ -135,32 +168,36 @@
             padding: 4px 2px;
             cursor: pointer;
             text-align: center;
+            overflow: hidden;
         }
         .cat-btn.active { background: var(--active-blue); color: white; }
 
-        /* Search Area */
         .search-area { padding: 5px; }
         #search-input {
             width: 100%; background: #000; border: 1px solid #444;
-            color: var(--winamp-green); font-size: 11px; padding: 5px; box-sizing: border-box;
+            color: var(--winamp-green); font-size: 11px; padding: 5px;
             outline: none;
         }
 
-        /* Playlist Editor (15 lagu height) */
         .playlist-area {
             background: #000;
-            height: 330px;
+            height: 250px;
             margin: 5px;
             border: 1px solid #444;
             overflow-y: auto;
         }
         .playlist-item {
-            display: flex; justify-content: space-between; padding: 6px 12px;
+            display: flex; justify-content: space-between; padding: 6px 10px;
             font-size: 11px; color: var(--winamp-yellow); cursor: pointer; border-bottom: 1px solid #111;
         }
         .playlist-item.active { background: var(--active-blue); color: white; }
 
-        input[type=range]#seek-bar { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); cursor: pointer; }
+        input[type=range]#seek-bar { 
+            width: calc(100% - 20px); 
+            margin: 5px 10px; 
+            accent-color: var(--winamp-green); 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body class="skin-classic">
@@ -176,12 +213,12 @@
         </select>
     </div>
 
-    <div style="font-size: 10px; padding: 2px 10px; color: #777;">WINAMP 0.91 - IPPNUDA PLAYER</div>
+    <div style="font-size: 9px; padding: 2px 10px; color: #777;">WINAMP 0.91 - IPPNUDA PLAYER</div>
     
     <div class="display-panel">
         <div>
             <div id="time-display">00:00</div>
-            <div id="song-title" style="font-size: 11px; width: 230px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Memuat...</div>
+            <div id="song-title">Memuat Lagu...</div>
         </div>
         <canvas id="visualizer"></canvas>
     </div>
@@ -224,9 +261,9 @@
 <script>
     const masterPlaylists = {
         "pop": [
-           { title: "Ada Apa Denganmu", url: "music/1. Peterpan - Ada Apa Denganmu .mp3", duration: "4:41" },
+            { title: "Ada Apa Denganmu", url: "music/1. Peterpan - Ada Apa Denganmu .mp3", duration: "4:41" },
             { title: "Mungkin Nanti", url: "music/2. Peterpan - Mungkin Nanti.mp3", duration: "4:29" },
-            { title: "Khayalan Tingkat tinggi", url: "music/3. Peterpan - Khayalan Tingkat.mp3", duration: "3:36" },
+            { title: "Khayalan Tinggi", url: "music/3. Peterpan - Khayalan Tingkat.mp3", duration: "3:36" },
             { title: "Dibelakangku", url: "music/4. Peterpan - Di Belakangku.mp3", duration: "3:45" },
             { title: "Ku Katakan Dengan Indah", url: "music/5. Peterpan - Ku Katakan Dengan Indah.mp3", duration: "5:34" },
             { title: "2 DSD", url: "music/6. Peterpan - 2 DSD.mp3", duration: "3:41" },
@@ -235,11 +272,11 @@
             { title: "Masa Lalu Tertinggal", url: "music/9. Peterpan - Masa Lalu Tertinggal.mp3", duration: "3:57" },
             { title: "Bintang Di Surga", url: "music/10. Peterpan - Bintang Di Surga.mp3", duration: "5:02" }
         ],
-        "Obro-obrog": [
+        "Obrog": [
             { title: "Ya Ramadhan", url: "music/Obro-obrog/Nasida_Ria_Ya_Ramadhan.mp3", duration: "3:43" },
             { title: "Magadir", url: "music/Obro-obrog/Masud_Sidiq_Magadir.mp3", duration: "11:38" }
         ],
-        "Sholawatan": [], "Dangdut": [], "Anak-anak": [], "Tarling": [], "Barat": [], "Qiro": [], "Ceramah": [], "Murotal": []
+        "Sholawat": [], "Dangdut": [], "Anak": [], "Tarling": [], "Barat": [], "Qiro": [], "Ceramah": [], "Murotal": []
     };
 
     let currentCat = "pop", currentTrackIndex = 0, isShuffle = false;
@@ -270,7 +307,7 @@
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
         let x = 0;
         for(let i=0; i<data.length; i++){
-            let h = data[i]/2;
+            let h = data[i]/4; // Sesuaikan skala tinggi visualizer
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--winamp-green');
             ctx.fillRect(x, canvas.height-h, 2, h); x += 4;
         }
@@ -281,7 +318,7 @@
         Object.keys(masterPlaylists).forEach(cat => {
             const btn = document.createElement('div');
             btn.className = `cat-btn ${cat === currentCat ? 'active' : ''}`;
-            btn.innerText = cat;
+            btn.innerText = cat.toUpperCase();
             btn.onclick = () => {
                 currentCat = cat; currentTrackIndex = 0;
                 renderCategories(); loadTrack(0, true);
@@ -293,7 +330,7 @@
     function loadTrack(index, autoPlay = false) {
         const songs = masterPlaylists[currentCat];
         if (!songs || songs.length === 0) {
-            playlistElement.innerHTML = '<div style="color:#555; text-align:center; padding-top:100px;">Folder Kosong</div>';
+            playlistElement.innerHTML = '<div style="color:#555; text-align:center; padding-top:50px;">Folder Kosong</div>';
             songTitleDisplay.innerText = "Kosong";
             return;
         }
@@ -324,22 +361,28 @@
     function playTrack() {
         initVisualizer();
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        audio.play().catch(() => console.log("Klik tombol PLAY!"));
+        audio.play().catch(e => console.log("Interaksi user diperlukan untuk memulai audio"));
     }
 
     function pauseTrack() { audio.pause(); }
     function stopTrack() { audio.pause(); audio.currentTime = 0; }
+    
     function nextTrack() {
         const s = masterPlaylists[currentCat]; if(!s || s.length === 0) return;
         currentTrackIndex = isShuffle ? Math.floor(Math.random()*s.length) : (currentTrackIndex+1)%s.length;
         loadTrack(currentTrackIndex, true);
     }
+    
     function prevTrack() {
         const s = masterPlaylists[currentCat]; if(!s || s.length === 0) return;
         currentTrackIndex = (currentTrackIndex-1+s.length)%s.length;
         loadTrack(currentTrackIndex, true);
     }
-    function toggleShuffle() { isShuffle = !isShuffle; document.getElementById('shuffle-btn').classList.toggle('active'); }
+    
+    function toggleShuffle() { 
+        isShuffle = !isShuffle; 
+        document.getElementById('shuffle-btn').classList.toggle('active'); 
+    }
 
     audio.addEventListener('timeupdate', () => {
         if (audio.duration) seekBar.value = (audio.currentTime / audio.duration) * 100;
