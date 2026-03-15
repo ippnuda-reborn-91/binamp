@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winamp Bento - Fixed</title>
+    <title>Winamp Bento - Fixed Play</title>
     <style>
         :root {
             --winamp-bg: #383d49;
@@ -65,15 +65,15 @@
             cursor: pointer;
             min-width: 52px;
         }
+        .btn:active { background: #111; color: var(--winamp-green); }
 
-        /* Ornamen Equalizer - Diletakkan di bawah kontrol */
         .eq-ornament {
             background: #2b303b;
             border: 1px inset #111;
             margin: 5px;
             display: flex;
             justify-content: space-around;
-            height: 80px; /* Tinggi ditambah agar tidak pendek */
+            height: 80px;
             padding: 15px 10px;
         }
 
@@ -81,19 +81,17 @@
         
         .eq-slider {
             -webkit-appearance: none;
-            width: 60px; /* Panjang slider ditingkatkan */
+            width: 60px;
             height: 2px;
             background: #111;
             transform: rotate(-90deg);
             margin-top: 25px;
-            cursor: default;
         }
 
         .eq-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 12px; height: 7px;
             background: #bdc5d6; border: 1px solid #000;
-            border-radius: 1px;
         }
 
         .playlist-area {
@@ -129,7 +127,7 @@
     <div class="display-panel">
         <div>
             <div id="time-display">00:00</div>
-            <div id="song-title" style="font-size: 11px; width: 220px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Memuat...</div>
+            <div id="song-title" style="font-size: 11px; width: 220px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">Pilih Lagu...</div>
         </div>
         <canvas id="visualizer"></canvas>
     </div>
@@ -153,8 +151,6 @@
         <div class="eq-bar"><input type="range" class="eq-slider" value="30"></div>
         <div class="eq-bar"><input type="range" class="eq-slider" value="90"></div>
         <div class="eq-bar"><input type="range" class="eq-slider" value="50"></div>
-        <div class="eq-bar"><input type="range" class="eq-slider" value="75"></div>
-        <div class="eq-bar"><input type="range" class="eq-slider" value="45"></div>
     </div>
 
     <div class="playlist-area" id="playlist"></div>
@@ -164,16 +160,16 @@
     </div>
 </div>
 
-<audio id="audio-player" crossorigin="anonymous"></audio>
+<audio id="audio-player" crossorigin="anonymous" preload="auto"></audio>
 
 <script>
     const masterPlaylists = {
         "pop": [
             { title: "Ada Apa Denganmu", url: "music/pop/Peterpan_Ada_Apa_Denganmu.mp3", duration: "4:41" },
             { title: "Mungkin Nanti", url: "music/pop/Peterpan_Mungkin_Nanti.mp3", duration: "4:29" },
-            { title: "Khayalan Tingkat tinggi", url: "music/pop/Peterpan_Khayalan_Tingkat_Tinggi.mp3", duration: "3:36" },
+            { title: "Khayalan Tinggi", url: "music/pop/Peterpan_Khayalan_Tingkat_Tinggi.mp3", duration: "3:36" },
             { title: "Dibelakangku", url: "music/pop/Peterpan_Di_Belakangku.mp3", duration: "3:45" },
-            { title: "Ku Katakan Dengan Indah", url: "music/pop/Peterpan_Ku_Katakan_Dengan_Indah.mp3", duration: "5:34" },
+            { title: "Ku Katakan Indah", url: "music/pop/Peterpan_Ku_Katakan_Dengan_Indah.mp3", duration: "5:34" },
             { title: "2 DSD", url: "music/pop/Peterpan_2_DSD.mp3", duration: "3:41" },
             { title: "Diatas Normal", url: "music/pop/Peterpan_Diatas_Normal.mp3", duration: "3:35" },
             { title: "Aku", url: "music/pop/Peterpan_Aku.mp3", duration: "3:02" },
@@ -184,12 +180,15 @@
     };
 
     let currentCat = "pop", currentTrackIndex = 0, isShuffle = false;
-    const audio = document.getElementById('audio-player'), playlistElement = document.getElementById('playlist');
-    const timeDisplay = document.getElementById('time-display'), songTitleDisplay = document.getElementById('song-title');
-    const seekBar = document.getElementById('seek-bar'), categorySelect = document.getElementById('category-select');
+    const audio = document.getElementById('audio-player');
+    const playlistElement = document.getElementById('playlist');
+    const timeDisplay = document.getElementById('time-display');
+    const songTitleDisplay = document.getElementById('song-title');
+    const seekBar = document.getElementById('seek-bar');
+    const categorySelect = document.getElementById('category-select');
 
     let audioCtx, analyser, canvas, ctx, source;
-    
+
     function initVisualizer() {
         if (audioCtx) return;
         try {
@@ -219,40 +218,35 @@
         }
     }
 
-    function loadTrack(index) {
+    function loadTrack(index, autoPlay = false) {
         const songs = masterPlaylists[currentCat];
         if (!songs || songs.length === 0) return;
         currentTrackIndex = index;
         
-        // Menggunakan encodeURI untuk menangani spasi dan titik pada nama file secara otomatis
+        // Encode URL untuk memastikan karakter aman
         audio.src = encodeURI(songs[index].url);
         songTitleDisplay.innerText = `${index + 1}. ${songs[index].title}`;
+        
         renderPlaylist();
-    }
-
-    function switchCategory(cat) {
-        currentCat = cat;
-        currentTrackIndex = 0;
-        if(masterPlaylists[cat] && masterPlaylists[cat].length > 0) {
-            loadTrack(0);
-            audio.play().catch(e => console.log("Klik PLAY untuk memulai"));
-        } else {
-            playlistElement.innerHTML = '<div class="empty-msg">Playlist Kosong</div>';
-            songTitleDisplay.innerText = "Kosong";
-            audio.src = "";
+        audio.load(); // Paksa reload resource
+        
+        if (autoPlay) {
+            playTrack();
         }
     }
 
     function renderPlaylist() {
         playlistElement.innerHTML = "";
         const songs = masterPlaylists[currentCat];
-        if (!songs || songs.length === 0) return;
-
+        if (!songs || songs.length === 0) {
+            playlistElement.innerHTML = '<div style="color:#555; text-align:center; padding-top:50px;">Kosong</div>';
+            return;
+        }
         songs.forEach((song, index) => {
             const item = document.createElement('div');
             item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
             item.innerHTML = `<span>${index + 1}. ${song.title}</span><span style="color:#0f0">${song.duration}</span>`;
-            item.onclick = () => { currentTrackIndex = index; loadTrack(index); audio.play(); };
+            item.onclick = () => loadTrack(index, true);
             playlistElement.appendChild(item);
         });
     }
@@ -260,23 +254,37 @@
     function playTrack() {
         initVisualizer();
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        if(audio.src) audio.play();
+        
+        // Memastikan audio diputar
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                // Berhasil diputar
+            }).catch(error => {
+                console.log("Playback diblokir browser, klik tombol PLAY secara manual.");
+            });
+        }
     }
 
+    function pauseTrack() { audio.pause(); }
+    function stopTrack() { audio.pause(); audio.currentTime = 0; }
     function nextTrack() {
         const s = masterPlaylists[currentCat];
         if(!s || s.length === 0) return;
         currentTrackIndex = isShuffle ? Math.floor(Math.random()*s.length) : (currentTrackIndex+1)%s.length;
-        loadTrack(currentTrackIndex);
-        audio.play();
+        loadTrack(currentTrackIndex, true);
     }
-
     function prevTrack() {
         const s = masterPlaylists[currentCat];
         if(!s || s.length === 0) return;
         currentTrackIndex = (currentTrackIndex-1+s.length)%s.length;
-        loadTrack(currentTrackIndex);
-        audio.play();
+        loadTrack(currentTrackIndex, true);
+    }
+
+    function switchCategory(cat) {
+        currentCat = cat;
+        currentTrackIndex = 0;
+        loadTrack(0, false);
     }
 
     function toggleShuffle() {
@@ -309,7 +317,8 @@
         categorySelect.appendChild(opt);
     });
     
-    loadTrack(0);
+    // Load track pertama tanpa auto-play untuk menghindari blokir browser
+    loadTrack(0, false);
 </script>
 </body>
 </html>
