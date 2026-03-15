@@ -200,7 +200,7 @@
 <body>
 
 <div id="winamp-container">
-    <div class="top-bar">WINAMP 5.92 - BENTO REPLICA</div>
+    <div class="top-bar">WINAMP 0.01 - BENTO REPLICA</div>
     
     <div class="display-panel">
         <div id="time-display">00:00</div>
@@ -268,7 +268,7 @@
             const item = document.createElement('div');
             item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
             item.innerHTML = `
-                <span>${index + 655}. ${song.title}</span>
+                <span>${index + 1}. ${song.title}</span>
                 <span class="dur">${song.duration}</span>
             `;
             item.onclick = () => playSpecific(index);
@@ -280,7 +280,7 @@
     function loadTrack(index) {
         currentTrackIndex = index;
         audio.src = songs[index].url;
-        songTitleDisplay.innerText = `${index + 655}. ${songs[index].title}`;
+        songTitleDisplay.innerText = `${index + 1}. ${songs[index].title}`;
         renderPlaylist();
     }
 
