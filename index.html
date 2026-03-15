@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winamp Bento - Fixed Path</title>
+    <title>Winamp Bento - Fixed</title>
     <style>
         :root {
             --winamp-bg: #383d49;
@@ -55,6 +55,7 @@
         #visualizer { width: 110px; height: 50px; background: #000; }
 
         .controls { display: flex; gap: 4px; padding: 10px 5px; justify-content: center; }
+        
         .btn {
             background: linear-gradient(to bottom, #5d6475, #2a2e38);
             border: 1px solid #000;
@@ -62,54 +63,62 @@
             padding: 6px 10px;
             font-size: 10px;
             cursor: pointer;
-            min-width: 50px;
+            min-width: 52px;
         }
-        .btn.active { color: var(--winamp-green); border-color: var(--winamp-green); }
 
-        /* Ornamen Equalizer Vertical */
+        /* Ornamen Equalizer - Diletakkan di bawah kontrol */
         .eq-ornament {
             background: #2b303b;
             border: 1px inset #111;
             margin: 5px;
             display: flex;
             justify-content: space-around;
-            height: 70px;
-            padding: 10px 5px;
+            height: 80px; /* Tinggi ditambah agar tidak pendek */
+            padding: 15px 10px;
         }
-        .eq-bar { display: flex; flex-direction: column; align-items: center; width: 20px; }
+
+        .eq-bar { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        
         .eq-slider {
             -webkit-appearance: none;
-            width: 50px; height: 2px;
+            width: 60px; /* Panjang slider ditingkatkan */
+            height: 2px;
             background: #111;
             transform: rotate(-90deg);
-            margin: 20px 0;
+            margin-top: 25px;
+            cursor: default;
         }
+
         .eq-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 10px; height: 6px;
+            width: 12px; height: 7px;
             background: #bdc5d6; border: 1px solid #000;
+            border-radius: 1px;
         }
 
         .playlist-area {
-            background: #000; height: 180px; margin: 0 5px;
+            background: #000; height: 180px; margin: 5px;
             border: 1px solid #444; overflow-y: auto;
         }
+
         .playlist-item {
             display: flex; justify-content: space-between; padding: 6px 12px;
             font-size: 12px; color: var(--winamp-yellow); cursor: pointer; border-bottom: 1px solid #111;
         }
+
         .playlist-item.active { background: var(--active-blue); color: white; }
         
         .folder-selection {
             display: flex; flex-direction: column; align-items: center;
             padding: 10px; border-top: 1px solid #444; margin-top: 5px;
         }
+
         #category-select {
-            width: 200px; background: #222; color: var(--winamp-yellow);
-            border: 1px solid #555; padding: 5px;
+            width: 220px; background: #222; color: var(--winamp-yellow);
+            border: 1px solid #555; padding: 6px; cursor: pointer;
         }
 
-        input[type=range] { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); }
+        input[type=range]#seek-bar { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); }
     </style>
 </head>
 <body>
@@ -136,8 +145,6 @@
         <button class="btn" id="shuffle-btn" onclick="toggleShuffle()">SHF</button>
     </div>
 
-    <div class="playlist-area" id="playlist"></div>
-
     <div class="eq-ornament">
         <div class="eq-bar"><input type="range" class="eq-slider" value="70"></div>
         <div class="eq-bar"><input type="range" class="eq-slider" value="40"></div>
@@ -146,7 +153,11 @@
         <div class="eq-bar"><input type="range" class="eq-slider" value="30"></div>
         <div class="eq-bar"><input type="range" class="eq-slider" value="90"></div>
         <div class="eq-bar"><input type="range" class="eq-slider" value="50"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="75"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="45"></div>
     </div>
+
+    <div class="playlist-area" id="playlist"></div>
 
     <div class="folder-selection">
         <select id="category-select" onchange="switchCategory(this.value)"></select>
@@ -158,16 +169,16 @@
 <script>
     const masterPlaylists = {
         "pop": [
-            { title: "Ada Apa Denganmu", url: "music/pop/1. Peterpan - Ada Apa Denganmu .mp3", duration: "4:41" },
-            { title: "Mungkin Nanti", url: "music/pop/2. Peterpan - Mungkin Nanti.mp3", duration: "4:29" },
-            { title: "Khayalan Tingkat tinggi", url: "music/pop/3. Peterpan - Khayalan Tingkat.mp3", duration: "3:36" },
-            { title: "Dibelakangku", url: "music/pop/4. Peterpan - Di Belakangku.mp3", duration: "3:45" },
-            { title: "Ku Katakan Dengan Indah", url: "music/pop/5. Peterpan - Ku Katakan Dengan Indah.mp3", duration: "5:34" },
-            { title: "2 DSD", url: "music/pop/6. Peterpan - 2 DSD.mp3", duration: "3:41" },
-            { title: "Diatas Normal", url: "music/pop/7. Peterpan - Diatas Normal.mp3", duration: "3:35" },
-            { title: "Aku", url: "music/pop/8.Peterpan - Aku.mp3", duration: "3:02" },
-            { title: "Masa Lalu Tertinggal", url: "music/pop/9. Peterpan - Masa Lalu Tertinggal.mp3", duration: "3:57" },
-            { title: "Bintang Di Surga", url: "music/pop/10. Peterpan - Bintang Di Surga.mp3", duration: "5:02" }
+            { title: "Ada Apa Denganmu", url: "music/pop/Peterpan_Ada_Apa_Denganmu.mp3", duration: "4:41" },
+            { title: "Mungkin Nanti", url: "music/pop/Peterpan_Mungkin_Nanti.mp3", duration: "4:29" },
+            { title: "Khayalan Tingkat tinggi", url: "music/pop/Peterpan_Khayalan_Tingkat_Tinggi.mp3", duration: "3:36" },
+            { title: "Dibelakangku", url: "music/pop/Peterpan_Di_Belakangku.mp3", duration: "3:45" },
+            { title: "Ku Katakan Dengan Indah", url: "music/pop/Peterpan_Ku_Katakan_Dengan_Indah.mp3", duration: "5:34" },
+            { title: "2 DSD", url: "music/pop/Peterpan_2_DSD.mp3", duration: "3:41" },
+            { title: "Diatas Normal", url: "music/pop/Peterpan_Diatas_Normal.mp3", duration: "3:35" },
+            { title: "Aku", url: "music/pop/Peterpan_Aku.mp3", duration: "3:02" },
+            { title: "Masa Lalu Tertinggal", url: "music/pop/Peterpan_Masa_Lalu_Tertinggal.mp3", duration: "3:57" },
+            { title: "Bintang Di Surga", url: "music/pop/Peterpan_Bintang_Di_Surga.mp3", duration: "5:02" }
         ],
         "Obro-obrog": [], "Sholawatan": [], "Dangdut": [], "Anak-anak": [], "Tarling": [], "Barat": [], "Qiro": [], "Ceramah": [], "Murotal": []
     };
@@ -178,75 +189,126 @@
     const seekBar = document.getElementById('seek-bar'), categorySelect = document.getElementById('category-select');
 
     let audioCtx, analyser, canvas, ctx, source;
+    
     function initVisualizer() {
         if (audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser(); canvas = document.getElementById('visualizer'); ctx = canvas.getContext('2d');
-        source = audioCtx.createMediaElementSource(audio); source.connect(analyser); analyser.connect(audioCtx.destination);
-        analyser.fftSize = 64; draw();
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            canvas = document.getElementById('visualizer');
+            ctx = canvas.getContext('2d');
+            source = audioCtx.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            analyser.fftSize = 64;
+            draw();
+        } catch(e) { console.error("Visualizer error:", e); }
     }
+
     function draw() {
         requestAnimationFrame(draw);
-        const data = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(data);
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        let x = 0; for(let i=0; i<data.length; i++){
-            let h = data[i]/2; ctx.fillStyle = `rgb(0,${data[i]+100},0)`;
-            ctx.fillRect(x, canvas.height-h, 2, h); x += 4;
+        let x = 0;
+        for(let i=0; i<data.length; i++){
+            let h = data[i]/2;
+            ctx.fillStyle = `rgb(0,${data[i]+100},0)`;
+            ctx.fillRect(x, canvas.height-h, 2, h);
+            x += 4;
         }
     }
 
     function loadTrack(index) {
         const songs = masterPlaylists[currentCat];
-        if (songs.length === 0) return;
+        if (!songs || songs.length === 0) return;
         currentTrackIndex = index;
-        // Fix: Menggunakan encodeURI untuk menangani spasi dan karakter khusus pada nama file
+        
+        // Menggunakan encodeURI untuk menangani spasi dan titik pada nama file secara otomatis
         audio.src = encodeURI(songs[index].url);
         songTitleDisplay.innerText = `${index + 1}. ${songs[index].title}`;
         renderPlaylist();
     }
 
     function switchCategory(cat) {
-        currentCat = cat; currentTrackIndex = 0;
-        if(masterPlaylists[cat].length > 0) { loadTrack(0); audio.play(); }
-        else { playlistElement.innerHTML = '<div class="empty-msg">Playlist Kosong</div>'; songTitleDisplay.innerText = "Kosong"; audio.src = ""; }
+        currentCat = cat;
+        currentTrackIndex = 0;
+        if(masterPlaylists[cat] && masterPlaylists[cat].length > 0) {
+            loadTrack(0);
+            audio.play().catch(e => console.log("Klik PLAY untuk memulai"));
+        } else {
+            playlistElement.innerHTML = '<div class="empty-msg">Playlist Kosong</div>';
+            songTitleDisplay.innerText = "Kosong";
+            audio.src = "";
+        }
     }
 
     function renderPlaylist() {
         playlistElement.innerHTML = "";
-        masterPlaylists[currentCat].forEach((song, index) => {
+        const songs = masterPlaylists[currentCat];
+        if (!songs || songs.length === 0) return;
+
+        songs.forEach((song, index) => {
             const item = document.createElement('div');
             item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
             item.innerHTML = `<span>${index + 1}. ${song.title}</span><span style="color:#0f0">${song.duration}</span>`;
-            item.onclick = () => { loadTrack(index); audio.play(); };
+            item.onclick = () => { currentTrackIndex = index; loadTrack(index); audio.play(); };
             playlistElement.appendChild(item);
         });
     }
 
-    function playTrack() { initVisualizer(); if(audioCtx.state==='suspended') audioCtx.resume(); audio.play(); }
-    function nextTrack() {
-        const s = masterPlaylists[currentCat]; if(s.length===0) return;
-        currentTrackIndex = isShuffle ? Math.floor(Math.random()*s.length) : (currentTrackIndex+1)%s.length;
-        loadTrack(currentTrackIndex); audio.play();
+    function playTrack() {
+        initVisualizer();
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if(audio.src) audio.play();
     }
+
+    function nextTrack() {
+        const s = masterPlaylists[currentCat];
+        if(!s || s.length === 0) return;
+        currentTrackIndex = isShuffle ? Math.floor(Math.random()*s.length) : (currentTrackIndex+1)%s.length;
+        loadTrack(currentTrackIndex);
+        audio.play();
+    }
+
     function prevTrack() {
-        const s = masterPlaylists[currentCat]; if(s.length===0) return;
+        const s = masterPlaylists[currentCat];
+        if(!s || s.length === 0) return;
         currentTrackIndex = (currentTrackIndex-1+s.length)%s.length;
-        loadTrack(currentTrackIndex); audio.play();
+        loadTrack(currentTrackIndex);
+        audio.play();
+    }
+
+    function toggleShuffle() {
+        isShuffle = !isShuffle;
+        document.getElementById('shuffle-btn').classList.toggle('active');
     }
 
     audio.addEventListener('timeupdate', () => {
-        seekBar.value = (audio.currentTime/audio.duration)*100 || 0;
-        let m = Math.floor(audio.currentTime/60), s = Math.floor(audio.currentTime%60);
-        timeDisplay.innerText = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+        if (audio.duration) {
+            seekBar.value = (audio.currentTime / audio.duration) * 100;
+        }
+        let m = Math.floor(audio.currentTime / 60);
+        let s = Math.floor(audio.currentTime % 60);
+        timeDisplay.innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     });
-    seekBar.oninput = () => audio.currentTime = (seekBar.value/100)*audio.duration;
+
+    seekBar.oninput = () => {
+        if (audio.duration) {
+            audio.currentTime = (seekBar.value / 100) * audio.duration;
+        }
+    };
+
     audio.addEventListener('ended', nextTrack);
 
-    // Init
+    // Inisialisasi awal
     Object.keys(masterPlaylists).forEach(cat => {
-        let opt = document.createElement('option'); opt.value = cat; opt.innerText = cat;
+        let opt = document.createElement('option');
+        opt.value = cat;
+        opt.innerText = cat;
         categorySelect.appendChild(opt);
     });
+    
     loadTrack(0);
 </script>
 </body>
