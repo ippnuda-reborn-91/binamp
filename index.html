@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winamp Bento</title>
+    <title>Winamp Bento - Fixed Path</title>
     <style>
         :root {
             --winamp-bg: #383d49;
@@ -34,7 +34,6 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.9);
         }
 
-        /* Panel LCD Atas */
         .display-panel {
             background: var(--winamp-display);
             margin: 5px;
@@ -55,7 +54,6 @@
 
         #visualizer { width: 110px; height: 50px; background: #000; }
 
-        /* Kontrol Playback */
         .controls { display: flex; gap: 4px; padding: 10px 5px; justify-content: center; }
         .btn {
             background: linear-gradient(to bottom, #5d6475, #2a2e38);
@@ -65,19 +63,35 @@
             font-size: 10px;
             cursor: pointer;
             min-width: 50px;
-            text-transform: uppercase;
         }
         .btn.active { color: var(--winamp-green); border-color: var(--winamp-green); }
 
-        /* Pencarian & Playlist */
-        .search-area { padding: 0 5px 5px; }
-        #search-input {
-            width: 100%; background: #000; border: 1px solid #444;
-            color: var(--winamp-green); font-size: 11px; padding: 5px; box-sizing: border-box;
+        /* Ornamen Equalizer Vertical */
+        .eq-ornament {
+            background: #2b303b;
+            border: 1px inset #111;
+            margin: 5px;
+            display: flex;
+            justify-content: space-around;
+            height: 70px;
+            padding: 10px 5px;
+        }
+        .eq-bar { display: flex; flex-direction: column; align-items: center; width: 20px; }
+        .eq-slider {
+            -webkit-appearance: none;
+            width: 50px; height: 2px;
+            background: #111;
+            transform: rotate(-90deg);
+            margin: 20px 0;
+        }
+        .eq-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px; height: 6px;
+            background: #bdc5d6; border: 1px solid #000;
         }
 
         .playlist-area {
-            background: #000; height: 200px; margin: 0 5px;
+            background: #000; height: 180px; margin: 0 5px;
             border: 1px solid #444; overflow-y: auto;
         }
         .playlist-item {
@@ -85,30 +99,17 @@
             font-size: 12px; color: var(--winamp-yellow); cursor: pointer; border-bottom: 1px solid #111;
         }
         .playlist-item.active { background: var(--active-blue); color: white; }
-        .empty-msg { color: #555; text-align: center; margin-top: 80px; font-size: 13px; }
-
-        /* Dropdown Folder (Tengah Bawah) */
+        
         .folder-selection {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px 5px 10px;
-            border-top: 1px solid #444;
-            margin-top: 10px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 10px; border-top: 1px solid #444; margin-top: 5px;
         }
-        .folder-selection label { font-size: 10px; margin-bottom: 5px; color: #888; }
         #category-select {
-            width: 200px;
-            background: #222;
-            color: var(--winamp-yellow);
-            border: 1px solid #555;
-            padding: 5px;
-            font-size: 12px;
-            outline: none;
-            cursor: pointer;
+            width: 200px; background: #222; color: var(--winamp-yellow);
+            border: 1px solid #555; padding: 5px;
         }
 
-        input[type=range] { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); cursor: pointer; }
+        input[type=range] { width: 95%; margin: 5px 10px; accent-color: var(--winamp-green); }
     </style>
 </head>
 <body>
@@ -135,23 +136,26 @@
         <button class="btn" id="shuffle-btn" onclick="toggleShuffle()">SHF</button>
     </div>
 
-    <div class="search-area">
-        <input type="text" id="search-input" placeholder="Cari lagu di playlist..." oninput="renderPlaylist()">
-    </div>
-
     <div class="playlist-area" id="playlist"></div>
 
+    <div class="eq-ornament">
+        <div class="eq-bar"><input type="range" class="eq-slider" value="70"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="40"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="80"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="60"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="30"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="90"></div>
+        <div class="eq-bar"><input type="range" class="eq-slider" value="50"></div>
+    </div>
+
     <div class="folder-selection">
-        <label>GANTI PLAYLIST / FOLDER:</label>
-        <select id="category-select" onchange="switchCategory(this.value)">
-            </select>
+        <select id="category-select" onchange="switchCategory(this.value)"></select>
     </div>
 </div>
 
 <audio id="audio-player" crossorigin="anonymous"></audio>
 
 <script>
-    // DATA MASTER (Sudah diarahkan ke sub-folder masing-masing)
     const masterPlaylists = {
         "pop": [
             { title: "Ada Apa Denganmu", url: "music/pop/1. Peterpan - Ada Apa Denganmu .mp3", duration: "4:41" },
@@ -165,109 +169,60 @@
             { title: "Masa Lalu Tertinggal", url: "music/pop/9. Peterpan - Masa Lalu Tertinggal.mp3", duration: "3:57" },
             { title: "Bintang Di Surga", url: "music/pop/10. Peterpan - Bintang Di Surga.mp3", duration: "5:02" }
         ],
-        "Obro-obrog": [],
-        "Sholawatan": [],
-        "Dangdut": [],
-        "Anak-anak": [],
-        "Tarling": [],
-        "Barat": [],
-        "Qiro": [],
-        "Ceramah": [],
-        "Murotal": []
+        "Obro-obrog": [], "Sholawatan": [], "Dangdut": [], "Anak-anak": [], "Tarling": [], "Barat": [], "Qiro": [], "Ceramah": [], "Murotal": []
     };
 
-    let currentCat = "pop";
-    let currentTrackIndex = 0;
-    let isShuffle = false;
+    let currentCat = "pop", currentTrackIndex = 0, isShuffle = false;
+    const audio = document.getElementById('audio-player'), playlistElement = document.getElementById('playlist');
+    const timeDisplay = document.getElementById('time-display'), songTitleDisplay = document.getElementById('song-title');
+    const seekBar = document.getElementById('seek-bar'), categorySelect = document.getElementById('category-select');
 
-    const audio = document.getElementById('audio-player');
-    const playlistElement = document.getElementById('playlist');
-    const timeDisplay = document.getElementById('time-display');
-    const songTitleDisplay = document.getElementById('song-title');
-    const seekBar = document.getElementById('seek-bar');
-    const shuffleBtn = document.getElementById('shuffle-btn');
-    const searchInput = document.getElementById('search-input');
-    const categorySelect = document.getElementById('category-select');
-
-    // VISUALIZER
     let audioCtx, analyser, canvas, ctx, source;
     function initVisualizer() {
         if (audioCtx) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        canvas = document.getElementById('visualizer');
-        ctx = canvas.getContext('2d');
-        source = audioCtx.createMediaElementSource(audio);
-        source.connect(analyser); analyser.connect(audioCtx.destination);
+        analyser = audioCtx.createAnalyser(); canvas = document.getElementById('visualizer'); ctx = canvas.getContext('2d');
+        source = audioCtx.createMediaElementSource(audio); source.connect(analyser); analyser.connect(audioCtx.destination);
         analyser.fftSize = 64; draw();
     }
     function draw() {
         requestAnimationFrame(draw);
-        const data = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(data);
+        const data = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data);
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        let x = 0;
-        for(let i=0; i<data.length; i++){
+        let x = 0; for(let i=0; i<data.length; i++){
             let h = data[i]/2; ctx.fillStyle = `rgb(0,${data[i]+100},0)`;
             ctx.fillRect(x, canvas.height-h, 2, h); x += 4;
         }
     }
 
-    // LOGIC FOLDER & PLAYLIST
-    function initApp() {
-        Object.keys(masterPlaylists).forEach(cat => {
-            let opt = document.createElement('option');
-            opt.value = cat; opt.innerText = cat;
-            categorySelect.appendChild(opt);
-        });
-        loadTrack(0);
-    }
-
-    function switchCategory(cat) {
-        currentCat = cat;
-        searchInput.value = "";
-        currentTrackIndex = 0;
-        if(masterPlaylists[cat].length > 0) {
-            loadTrack(0); audio.play();
-        } else {
-            renderPlaylist();
-            songTitleDisplay.innerText = "Playlist Kosong";
-            audio.src = ""; timeDisplay.innerText = "00:00";
-        }
-    }
-
-    function renderPlaylist() {
-        playlistElement.innerHTML = "";
-        const songs = masterPlaylists[currentCat];
-        const filter = searchInput.value.toLowerCase();
-
-        if (songs.length === 0) {
-            playlistElement.innerHTML = '<div class="empty-msg">Folder ini masih kosong...</div>';
-            return;
-        }
-
-        songs.forEach((song, index) => {
-            if (song.title.toLowerCase().includes(filter)) {
-                const item = document.createElement('div');
-                item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
-                item.innerHTML = `<span>${index + 1}. ${song.title}</span><span style="color:#0f0">${song.duration}</span>`;
-                item.onclick = () => { currentTrackIndex = index; loadTrack(index); audio.play(); };
-                playlistElement.appendChild(item);
-            }
-        });
-    }
-
     function loadTrack(index) {
         const songs = masterPlaylists[currentCat];
         if (songs.length === 0) return;
-        audio.src = songs[index].url;
+        currentTrackIndex = index;
+        // Fix: Menggunakan encodeURI untuk menangani spasi dan karakter khusus pada nama file
+        audio.src = encodeURI(songs[index].url);
         songTitleDisplay.innerText = `${index + 1}. ${songs[index].title}`;
         renderPlaylist();
     }
 
-    function playTrack() { initVisualizer(); if(audioCtx.state==='suspended') audioCtx.resume(); if(audio.src) audio.play(); }
-    function pauseTrack() { audio.pause(); }
-    function stopTrack() { audio.pause(); audio.currentTime = 0; }
+    function switchCategory(cat) {
+        currentCat = cat; currentTrackIndex = 0;
+        if(masterPlaylists[cat].length > 0) { loadTrack(0); audio.play(); }
+        else { playlistElement.innerHTML = '<div class="empty-msg">Playlist Kosong</div>'; songTitleDisplay.innerText = "Kosong"; audio.src = ""; }
+    }
+
+    function renderPlaylist() {
+        playlistElement.innerHTML = "";
+        masterPlaylists[currentCat].forEach((song, index) => {
+            const item = document.createElement('div');
+            item.className = `playlist-item ${index === currentTrackIndex ? 'active' : ''}`;
+            item.innerHTML = `<span>${index + 1}. ${song.title}</span><span style="color:#0f0">${song.duration}</span>`;
+            item.onclick = () => { loadTrack(index); audio.play(); };
+            playlistElement.appendChild(item);
+        });
+    }
+
+    function playTrack() { initVisualizer(); if(audioCtx.state==='suspended') audioCtx.resume(); audio.play(); }
     function nextTrack() {
         const s = masterPlaylists[currentCat]; if(s.length===0) return;
         currentTrackIndex = isShuffle ? Math.floor(Math.random()*s.length) : (currentTrackIndex+1)%s.length;
@@ -278,7 +233,6 @@
         currentTrackIndex = (currentTrackIndex-1+s.length)%s.length;
         loadTrack(currentTrackIndex); audio.play();
     }
-    function toggleShuffle() { isShuffle = !isShuffle; shuffleBtn.classList.toggle('active'); }
 
     audio.addEventListener('timeupdate', () => {
         seekBar.value = (audio.currentTime/audio.duration)*100 || 0;
@@ -288,7 +242,12 @@
     seekBar.oninput = () => audio.currentTime = (seekBar.value/100)*audio.duration;
     audio.addEventListener('ended', nextTrack);
 
-    initApp();
+    // Init
+    Object.keys(masterPlaylists).forEach(cat => {
+        let opt = document.createElement('option'); opt.value = cat; opt.innerText = cat;
+        categorySelect.appendChild(opt);
+    });
+    loadTrack(0);
 </script>
 </body>
 </html>
